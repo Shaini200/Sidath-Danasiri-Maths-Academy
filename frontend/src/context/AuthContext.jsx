@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         if (token) {
-            axios.get('http://localhost:5000/api/auth/me', {
+            axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             .then(res => {
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     }, [token]);
 
     const login = async (username, password) => {
-        const res = await axios.post('http://localhost:5000/api/auth/login', { username, password });
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { username, password });
         localStorage.setItem('token', res.data.token);
         setToken(res.data.token);
         setUser(res.data.user);

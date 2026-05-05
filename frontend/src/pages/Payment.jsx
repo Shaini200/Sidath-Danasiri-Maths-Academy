@@ -20,7 +20,7 @@ const Payment = () => {
 
     const fetchPayments = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/payments/history', {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/payments/history`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setPayments(res.data);
@@ -48,7 +48,7 @@ const Payment = () => {
         setMessage('');
 
         try {
-            await axios.post('http://localhost:5000/api/payments/upload', data, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/payments/upload`, data, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -145,7 +145,7 @@ const Payment = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.bank}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rs. {p.amount}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                                            <a href={`http://localhost:5000/${p.slip_path.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" className="hover:underline">View Slip</a>
+                                            <a href={`${import.meta.env.VITE_API_URL}/${p.slip_path.replace(/\\/g, '/')}`} target="_blank" rel="noreferrer" className="hover:underline">View Slip</a>
                                         </td>
                                     </tr>
                                 ))}

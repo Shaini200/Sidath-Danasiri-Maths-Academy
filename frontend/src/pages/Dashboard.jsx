@@ -12,12 +12,12 @@ const Dashboard = () => {
         const fetchStats = async () => {
             try {
                 if (user?.role === 'Admin') {
-                    const res = await axios.get('http://localhost:5000/api/students', {
+                    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/students`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     setStats(prev => ({ ...prev, students: res.data.length }));
                 }
-                const payRes = await axios.get('http://localhost:5000/api/payments/history', {
+                const payRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/payments/history`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setStats(prev => ({ ...prev, payments: payRes.data.length }));

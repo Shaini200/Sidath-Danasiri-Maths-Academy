@@ -108,7 +108,7 @@ const StudentList = () => {
 
     const fetchGradeCounts = useCallback(async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/students/grade-counts', { headers: { Authorization: `Bearer ${token}` } });
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/students/grade-counts`, { headers: { Authorization: `Bearer ${token}` } });
             const map = {}; let total = 0;
             res.data.forEach(({ grade, count }) => { map[grade] = Number(count); total += Number(count); });
             setGradeCounts(map); setTotalCount(total);
@@ -122,7 +122,7 @@ const StudentList = () => {
             if (selectedGrade !== 'All') p.set('grade', selectedGrade);
             if (selectedMonth !== 'All') p.set('month', selectedMonth);
             if (searchTerm.trim()) p.set('search', searchTerm.trim());
-            const res = await axios.get(`http://localhost:5000/api/students/by-grade?${p}`, { headers: { Authorization: `Bearer ${token}` } });
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/students/by-grade?${p}`, { headers: { Authorization: `Bearer ${token}` } });
             setStudents(res.data);
         } catch (e) { console.error(e); setStudents([]); }
         finally { setLoading(false); }
@@ -134,7 +134,7 @@ const StudentList = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this student?')) return;
         try {
-            await axios.delete(`http://localhost:5000/api/students/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/students/${id}`, { headers: { Authorization: `Bearer ${token}` } });
             fetchStudents(); fetchGradeCounts();
         } catch { alert('Failed to delete'); }
     };
@@ -149,7 +149,7 @@ const StudentList = () => {
     const handleEditSave = async (e) => {
         e.preventDefault(); setEditLoading(true); setEditError('');
         try {
-            await axios.put(`http://localhost:5000/api/students/${editStudent.id}`, editForm, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/students/${editStudent.id}`, editForm, { headers: { Authorization: `Bearer ${token}` } });
             setEditStudent(null); fetchStudents(); fetchGradeCounts();
         } catch (err) { setEditError(err.response?.data?.message || 'Update failed'); }
         finally { setEditLoading(false); }
