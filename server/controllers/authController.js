@@ -13,8 +13,13 @@ exports.login = async (req, res) => {
         }
 
         const user = users[0];
+        const passwordHash = user.password || user.password_hash;
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        if (!passwordHash) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        const isMatch = await bcrypt.compare(password, passwordHash);
 
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
@@ -31,6 +36,13 @@ exports.login = async (req, res) => {
         res.json({ token, user: payload });
     } catch (err) {
         console.error(err);
+        if (
+            err.code === 'ECONNREFUSED' ||
+            err.message?.includes('Database is not configured') ||
+            err.message?.includes('connect ECONNREFUSED')
+        ) {
+            return res.status(500).json({ message: 'Database connection failed. Check Vercel environment variables.' });
+        }
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -46,6 +58,13 @@ exports.getMe = async (req, res) => {
         res.json(users[0]);
     } catch (err) {
         console.error(err);
+        if (
+            err.code === 'ECONNREFUSED' ||
+            err.message?.includes('Database is not configured') ||
+            err.message?.includes('connect ECONNREFUSED')
+        ) {
+            return res.status(500).json({ message: 'Database connection failed. Check Vercel environment variables.' });
+        }
         res.status(500).json({ message: 'Server error' });
     }
 };
