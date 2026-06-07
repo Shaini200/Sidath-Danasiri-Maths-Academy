@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@source "../app/**/*.{js,jsx}";
+@source "../src/**/*.{js,jsx}";
+@source "../pages/**/*.{js,jsx}";
+
 body {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   background-color: #f3f4f6;
