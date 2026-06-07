@@ -1,18 +1,48 @@
 const db = require('../config/db');
 
+const REQUIRED_PAYMENT_FIELDS = ['student_id', 'bank', 'month', 'date', 'amount'];
+
+const cleanString = (value) => String(value ?? '').trim();
+
 exports.recordPayment = async (req, res) => {
     try {
-        const { student_id, bank, method, month, date, amount } = req.body;
+        const body = req.body || {};
+        const payment = {
+            student_id: cleanString(body.student_id),
+            bank: cleanString(body.bank),
+            method: cleanString(body.method) || 'Bank Transfer',
+            month: cleanString(body.month),
+            date: cleanString(body.date),
+            amount: Number(body.amount),
+        };
+
+        const missingField = REQUIRED_PAYMENT_FIELDS.find((field) => {
+            if (field === 'amount') return body.amount === undefined || body.amount === null || cleanString(body.amount) === '';
+            return !payment[field];
+        });
+
+        if (missingField) {
+            return res.status(400).json({ message: `Missing payment field: ${missingField}` });
+        }
+
+        if (!Number.isFinite(payment.amount) || payment.amount <= 0) {
+            return res.status(400).json({ message: 'Amount must be greater than 0' });
+        }
+
+        const [students] = await db.execute('SELECT * FROM students WHERE student_id = ?', [payment.student_id]);
+        if (students.length === 0) {
+            return res.status(404).json({ message: 'Student ID not found' });
+        }
 
         const [result] = await db.execute(
             'INSERT INTO payments (student_id, bank, method, month, date, slip_path, amount) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [student_id, bank, method, month, date, '', amount || 0]
+            [payment.student_id, payment.bank, payment.method, payment.month, payment.date, '', payment.amount]
         );
 
         res.status(201).json({ message: 'Payment recorded successfully', paymentId: result.insertId });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: error.message || 'Server error' });
     }
 };
 

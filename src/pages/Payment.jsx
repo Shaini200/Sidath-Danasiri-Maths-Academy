@@ -6,6 +6,7 @@ import { apiUrl } from '../lib/api';
 const Payment = () => {
     const { token, user } = useContext(AuthContext);
     const [payments, setPayments] = useState([]);
+    const [students, setStudents] = useState([]);
     const [formData, setFormData] = useState({
         student_id: user?.role === 'Student' ? user.username : '',
         bank: '',
@@ -18,6 +19,8 @@ const Payment = () => {
     const [message, setMessage] = useState('');
 
     const fetchPayments = useCallback(async () => {
+        if (!token) return;
+
         try {
             const res = await axios.get(apiUrl('/api/payments/history'), {
                 headers: { Authorization: `Bearer ${token}` }
@@ -28,9 +31,29 @@ const Payment = () => {
         }
     }, [token]);
 
+    const fetchStudents = useCallback(async () => {
+        if (!token || user?.role !== 'Admin') return;
+
+        try {
+            const res = await axios.get(apiUrl('/api/students'), {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setStudents(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    }, [token, user?.role]);
+
     useEffect(() => {
         fetchPayments();
-    }, [fetchPayments]);
+        fetchStudents();
+    }, [fetchPayments, fetchStudents]);
+
+    useEffect(() => {
+        if (user?.role === 'Student') {
+            setFormData((current) => ({ ...current, student_id: user.username }));
+        }
+    }, [user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -39,12 +62,25 @@ const Payment = () => {
         setMessage('');
 
         try {
-            await axios.post(apiUrl('/api/payments'), formData, {
+            const payload = {
+                ...formData,
+                student_id: user?.role === 'Student' ? user.username : formData.student_id.trim(),
+                bank: formData.bank.trim(),
+                amount: Number(formData.amount),
+            };
+
+            await axios.post(apiUrl('/api/payments'), payload, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                 }
             });
             setMessage('Payment recorded successfully!');
+            setFormData((current) => ({
+                ...current,
+                bank: '',
+                amount: '',
+                student_id: user?.role === 'Student' ? user.username : current.student_id,
+            }));
             fetchPayments();
         } catch (err) {
             setMessage(err.response?.data?.message || 'Payment submission failed');
@@ -64,8 +100,19 @@ const Payment = () => {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {user?.role === 'Admin' && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
-                                <input type="text" value={formData.student_id} onChange={e => setFormData({...formData, student_id: e.target.value})} required className="w-full px-3 py-2 border rounded-lg" />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
+                                {students.length > 0 ? (
+                                    <select value={formData.student_id} onChange={e => setFormData({...formData, student_id: e.target.value})} required className="w-full px-3 py-2 border rounded-lg">
+                                        <option value="">Select student</option>
+                                        {students.map(student => (
+                                            <option key={student.id || student.student_id} value={student.student_id}>
+                                                {student.name} ({student.student_id})
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input type="text" value={formData.student_id} onChange={e => setFormData({...formData, student_id: e.target.value})} required className="w-full px-3 py-2 border rounded-lg" />
+                                )}
                             </div>
                         )}
                         <div>
