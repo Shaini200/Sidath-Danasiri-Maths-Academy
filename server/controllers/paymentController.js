@@ -1,51 +1,19 @@
 const db = require('../config/db');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+exports.recordPayment = async (req, res) => {
+    try {
+        const { student_id, bank, method, month, date, amount } = req.body;
 
-// Set up Multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        fs.mkdirSync(uploadDir, { recursive: true });
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+        const [result] = await db.execute(
+            'INSERT INTO payments (student_id, bank, method, month, date, slip_path, amount) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [student_id, bank, method, month, date, '', amount || 0]
+        );
+
+        res.status(201).json({ message: 'Payment recorded successfully', paymentId: result.insertId });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-}).single('slip');
-
-exports.uploadPayment = (req, res) => {
-    upload(req, res, async (err) => {
-        if (err) {
-            return res.status(400).json({ message: err.message });
-        }
-        
-        if (!req.file) {
-            return res.status(400).json({ message: 'Please upload a payment slip' });
-        }
-
-        try {
-            const { student_id, bank, method, month, date, amount } = req.body;
-            const slip_path = `uploads/${req.file.filename}`;
-
-            const [result] = await db.execute(
-                'INSERT INTO payments (student_id, bank, method, month, date, slip_path, amount) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [student_id, bank, method, month, date, slip_path, amount || 0]
-            );
-
-            res.status(201).json({ message: 'Payment uploaded successfully', paymentId: result.insertId });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Server error' });
-        }
-    });
 };
 
 exports.getPaymentHistory = async (req, res) => {

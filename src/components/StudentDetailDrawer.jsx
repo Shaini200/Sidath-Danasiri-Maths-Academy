@@ -1,10 +1,10 @@
 import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { apiUrl, assetUrl } from '../lib/api';
+import { apiUrl } from '../lib/api';
 import {
     X, User, Phone, MapPin, GraduationCap, Calendar,
-    CreditCard, CheckCircle, Clock, ExternalLink
+    CreditCard, CheckCircle, Clock
 } from 'lucide-react';
 
 const GRADE_COLORS = {
@@ -245,23 +245,6 @@ const StudentDetailDrawer = ({ student, onClose }) => {
                                                 {p.bank} · {p.method} · {new Date(p.date).toLocaleDateString()}
                                             </div>
                                         </div>
-                                        <a
-                                            href={assetUrl(p.slip_path)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: '4px',
-                                                fontSize: '12px', fontWeight: 600,
-                                                color: gradeColor.tab,
-                                                textDecoration: 'none',
-                                                background: gradeColor.light,
-                                                padding: '5px 10px', borderRadius: '6px',
-                                                whiteSpace: 'nowrap', flexShrink: 0,
-                                            }}
-                                        >
-                                            <ExternalLink size={12} />
-                                            Slip
-                                        </a>
                                     </div>
                                 ))}
                             </div>

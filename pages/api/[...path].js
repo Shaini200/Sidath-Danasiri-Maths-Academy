@@ -1,15 +1,7 @@
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
 const authRoutes = require('../../server/routes/authRoutes');
 const studentRoutes = require('../../server/routes/studentRoutes');
 const paymentRoutes = require('../../server/routes/paymentRoutes');
-
-const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
 
 const app = express();
 
@@ -20,7 +12,6 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json());
-app.use('/uploads', express.static(uploadDir));
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/payments', paymentRoutes);

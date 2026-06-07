@@ -294,7 +294,7 @@ const createSupabaseDb = () => {
                 const [student_id, bank, method, month, date, slip_path, amount] = params;
                 const { data, error } = await supabase
                     .from('payments')
-                    .insert({ student_id, bank, method, month, date, slip_path, amount: amount || 0 })
+                    .insert({ student_id, bank, method, month, date, slip_path: slip_path || '', amount: amount || 0 })
                     .select('id')
                     .single();
                 throwSupabaseError(error);

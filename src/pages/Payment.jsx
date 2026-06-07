@@ -1,13 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { UploadCloud } from 'lucide-react';
-import { apiUrl, assetUrl } from '../lib/api';
+import { apiUrl } from '../lib/api';
 
 const Payment = () => {
     const { token, user } = useContext(AuthContext);
     const [payments, setPayments] = useState([]);
-    const [file, setFile] = useState(null);
     const [formData, setFormData] = useState({
         student_id: user?.role === 'Student' ? user.username : '',
         bank: '',
@@ -16,7 +14,7 @@ const Payment = () => {
         date: new Date().toISOString().split('T')[0],
         amount: ''
     });
-    const [uploading, setUploading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState('');
 
     const fetchPayments = useCallback(async () => {
@@ -34,34 +32,24 @@ const Payment = () => {
         fetchPayments();
     }, [fetchPayments]);
 
-    const handleUpload = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!file) {
-            setMessage('Please select a file');
-            return;
-        }
 
-        const data = new FormData();
-        data.append('slip', file);
-        Object.keys(formData).forEach(key => data.append(key, formData[key]));
-
-        setUploading(true);
+        setSubmitting(true);
         setMessage('');
 
         try {
-            await axios.post(apiUrl('/api/payments/upload'), data, {
+            await axios.post(apiUrl('/api/payments'), formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
                 }
             });
-            setMessage('Payment uploaded successfully!');
-            setFile(null);
+            setMessage('Payment recorded successfully!');
             fetchPayments();
         } catch (err) {
-            setMessage(err.response?.data?.message || 'Upload failed');
+            setMessage(err.response?.data?.message || 'Payment submission failed');
         } finally {
-            setUploading(false);
+            setSubmitting(false);
         }
     };
 
@@ -71,9 +59,9 @@ const Payment = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h2 className="text-xl font-bold mb-4">Upload Payment Slip</h2>
+                    <h2 className="text-xl font-bold mb-4">Record Payment</h2>
                     {message && <div className={`p-3 rounded mb-4 ${message.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{message}</div>}
-                    <form onSubmit={handleUpload} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         {user?.role === 'Admin' && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
@@ -100,23 +88,8 @@ const Payment = () => {
                                 <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required className="w-full px-3 py-2 border rounded-lg" />
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Slip Image</label>
-                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-500 transition-colors">
-                                <div className="space-y-1 text-center">
-                                    <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                                    <div className="flex text-sm text-gray-600 justify-center">
-                                        <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                                            <span>Upload a file</span>
-                                            <input id="file-upload" type="file" className="sr-only" onChange={e => setFile(e.target.files[0])} accept="image/*" />
-                                        </label>
-                                    </div>
-                                    <p className="text-xs text-gray-500">{file ? file.name : 'PNG, JPG up to 5MB'}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" disabled={uploading} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
-                            {uploading ? 'Uploading...' : 'Submit Payment'}
+                        <button type="submit" disabled={submitting} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+                            {submitting ? 'Saving...' : 'Submit Payment'}
                         </button>
                     </form>
                 </div>
@@ -134,7 +107,6 @@ const Payment = () => {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slip</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -145,9 +117,6 @@ const Payment = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.month}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.bank}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rs. {p.amount}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                                            <a href={assetUrl(p.slip_path)} target="_blank" rel="noreferrer" className="hover:underline">View Slip</a>
-                                        </td>
                                     </tr>
                                 ))}
                                 {payments.length === 0 && <tr><td colSpan={user?.role === 'Admin' ? 5 : 4} className="p-6 text-center text-gray-500">No payment history found.</td></tr>}

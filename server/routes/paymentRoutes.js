@@ -3,7 +3,8 @@ const router = express.Router();
 const paymentController = require('../controllers/paymentController');
 const { auth } = require('../middleware/auth');
 
-router.post('/upload', auth, paymentController.uploadPayment);
+router.post('/', auth, paymentController.recordPayment);
+router.post('/upload', auth, paymentController.recordPayment);
 router.get('/history', auth, paymentController.getPaymentHistory);
 // Per-student payment history — must be before any /:id wildcards
 router.get('/student/:student_id', auth, paymentController.getPaymentsByStudentId);
