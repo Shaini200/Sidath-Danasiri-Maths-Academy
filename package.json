@@ -1,0 +1,42 @@
+{
+  "name": "sidath-danasiri-maths-academy",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "db:init": "node scripts/initSchoolDb.js"
+  },
+  "dependencies": {
+    "axios": "^1.16.0",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "lucide-react": "^1.14.0",
+    "multer": "^2.1.1",
+    "mysql2": "^3.22.3",
+    "next": "^16.2.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.14.2",
+    "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.7",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.5.0",
+    "postcss": "^8.5.13",
+    "tailwindcss": "^4.2.4"
+  }
+}
